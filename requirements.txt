@@ -1,0 +1,2 @@
+# Optional local launcher and model-cache tooling. Strata installs its own requirements on Kaggle.
+kaggle==2.2.4

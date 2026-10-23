@@ -1,0 +1,25 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "sok/strata-iq2_xs",
+  "providers": {
+    "sok": {
+      "package": "@opencode/ai/providers/openai-compatible",
+      "env": ["STRATA_API_KEY"],
+      "name": "sok (Strata on Kaggle)",
+      "settings": {
+        "baseURL": "{env:STRATA_BASE_URL}",
+        "apiKey": "{env:STRATA_API_KEY}",
+        "headerTimeout": 900000,
+        "chunkTimeout": 900000
+      },
+      "models": {
+        "strata-iq2_xs": {
+          "name": "Strata IQ2_XS",
+          "capabilities": {"tools": true, "input": ["text"], "output": ["text"]},
+          "compatibility": {"reasoningField": "reasoning_content"},
+          "limit": {"context": 8192, "output": 2048}
+        }
+      }
+    }
+  }
+}

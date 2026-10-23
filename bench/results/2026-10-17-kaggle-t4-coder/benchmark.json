@@ -1,0 +1,939 @@
+{
+  "model": "strata-coder",
+  "runs": [
+    {
+      "ttft_s": 1.6345720399999664,
+      "elapsed_s": 3.144580727999937,
+      "usage": {
+        "prompt_tokens": 177,
+        "completion_tokens": 35,
+        "total_tokens": 212,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 177,
+        "prompt_ms": 1595.8,
+        "prompt_per_token_ms": 9.016,
+        "prompt_per_second": 110.9,
+        "predicted_n": 35,
+        "predicted_ms": 1542.7,
+        "predicted_per_token_ms": 44.077,
+        "predicted_per_second": 22.7,
+        "draft_n": 0,
+        "draft_n_accepted": 0
+      },
+      "finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "```python\ndef count_items(items: list) -> int:\n    \"\"\"Count the number of items in the given list.\"\"\"\n    return len(items)\n```"
+      },
+      "prompt_words": 128,
+      "repeat": 0,
+      "prompt_tokens_per_s": 110.9,
+      "generation_tokens_per_s": 22.7
+    },
+    {
+      "ttft_s": 1.4426013670001794,
+      "elapsed_s": 2.8327099480000015,
+      "usage": {
+        "prompt_tokens": 177,
+        "completion_tokens": 38,
+        "total_tokens": 215,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 177,
+        "prompt_ms": 1406.8,
+        "prompt_per_token_ms": 7.948,
+        "prompt_per_second": 125.8,
+        "predicted_n": 38,
+        "predicted_ms": 1422.8,
+        "predicted_per_token_ms": 37.442,
+        "predicted_per_second": 26.7,
+        "draft_n": 0,
+        "draft_n_accepted": 0
+      },
+      "finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "```python\ndef count_items(text: str) -> int:\n    \"\"\"Count occurrences of 'item' in the given text.\"\"\"\n    return text.count(\"item\")\n```"
+      },
+      "prompt_words": 128,
+      "repeat": 1,
+      "prompt_tokens_per_s": 125.8,
+      "generation_tokens_per_s": 26.7
+    },
+    {
+      "ttft_s": 1.451241957000093,
+      "elapsed_s": 2.678383912000072,
+      "usage": {
+        "prompt_tokens": 177,
+        "completion_tokens": 38,
+        "total_tokens": 215,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 177,
+        "prompt_ms": 1414.4,
+        "prompt_per_token_ms": 7.991,
+        "prompt_per_second": 125.1,
+        "predicted_n": 38,
+        "predicted_ms": 1260.8,
+        "predicted_per_token_ms": 33.179,
+        "predicted_per_second": 30.1,
+        "draft_n": 0,
+        "draft_n_accepted": 0
+      },
+      "finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "```python\ndef count_items(text: str) -> int:\n    \"\"\"Count occurrences of 'item' in the given text.\"\"\"\n    return text.count(\"item\")\n```"
+      },
+      "prompt_words": 128,
+      "repeat": 2,
+      "prompt_tokens_per_s": 125.1,
+      "generation_tokens_per_s": 30.1
+    },
+    {
+      "ttft_s": 2.1105291540000053,
+      "elapsed_s": 3.446118164999916,
+      "usage": {
+        "prompt_tokens": 561,
+        "completion_tokens": 40,
+        "total_tokens": 601,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 561,
+        "prompt_ms": 2074.3,
+        "prompt_per_token_ms": 3.698,
+        "prompt_per_second": 270.5,
+        "predicted_n": 40,
+        "predicted_ms": 1368.3,
+        "predicted_per_token_ms": 34.207,
+        "predicted_per_second": 29.2,
+        "draft_n": 0,
+        "draft_n_accepted": 0
+      },
+      "finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "```python\ndef count_items(text: str) -> int:\n    \"\"\"Count occurrences of the word 'item' in the given text.\"\"\"\n    return text.count(\"item\")\n```"
+      },
+      "prompt_words": 512,
+      "repeat": 0,
+      "prompt_tokens_per_s": 270.5,
+      "generation_tokens_per_s": 29.2
+    },
+    {
+      "ttft_s": 2.1210725670000556,
+      "elapsed_s": 3.4125958429999628,
+      "usage": {
+        "prompt_tokens": 561,
+        "completion_tokens": 40,
+        "total_tokens": 601,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 561,
+        "prompt_ms": 2084.4,
+        "prompt_per_token_ms": 3.716,
+        "prompt_per_second": 269.1,
+        "predicted_n": 40,
+        "predicted_ms": 1324.6,
+        "predicted_per_token_ms": 33.115,
+        "predicted_per_second": 30.2,
+        "draft_n": 0,
+        "draft_n_accepted": 0
+      },
+      "finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "```python\ndef count_items(text: str) -> int:\n    \"\"\"Count occurrences of the word 'item' in the given text.\"\"\"\n    return text.count(\"item\")\n```"
+      },
+      "prompt_words": 512,
+      "repeat": 1,
+      "prompt_tokens_per_s": 269.1,
+      "generation_tokens_per_s": 30.2
+    },
+    {
+      "ttft_s": 2.13821722900002,
+      "elapsed_s": 5.240902083000037,
+      "usage": {
+        "prompt_tokens": 561,
+        "completion_tokens": 87,
+        "total_tokens": 648,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 561,
+        "prompt_ms": 2101.7,
+        "prompt_per_token_ms": 3.746,
+        "prompt_per_second": 266.9,
+        "predicted_n": 87,
+        "predicted_ms": 3135.9,
+        "predicted_per_token_ms": 36.045,
+        "predicted_per_second": 27.7,
+        "draft_n": 6,
+        "draft_n_accepted": 2
+      },
+      "finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "```python\ndef count_items(text: str) -> int:\n    \"\"\"\n    Counts the number of occurrences of the word 'item' in the given text.\n    \n    Args:\n        text (str): The input string containing repeated 'item' words.\n    \n    Returns:\n        int: The total count of 'item' occurrences.\n    \"\"\"\n    return text.count(\"item\")\n```"
+      },
+      "prompt_words": 512,
+      "repeat": 2,
+      "prompt_tokens_per_s": 266.9,
+      "generation_tokens_per_s": 27.7
+    },
+    {
+      "ttft_s": 4.7731486889999815,
+      "elapsed_s": 9.433664191999924,
+      "usage": {
+        "prompt_tokens": 2097,
+        "completion_tokens": 128,
+        "total_tokens": 2225,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 2097,
+        "prompt_ms": 4734.0,
+        "prompt_per_token_ms": 2.258,
+        "prompt_per_second": 443.0,
+        "predicted_n": 128,
+        "predicted_ms": 4694.6,
+        "predicted_per_token_ms": 36.677,
+        "predicted_per_second": 27.3,
+        "draft_n": 6,
+        "draft_n_accepted": 2
+      },
+      "finish_reason": "length",
+      "message": {
+        "role": "assistant",
+        "content": "```python\ndef count_items(text: str) -> int:\n    \"\"\"\n    Counts the number of times the word 'item' appears in the given text.\n    \n    Args:\n        text (str): The input string containing repeated 'item' words.\n        \n    Returns:\n        int: The total count of the word 'item'.\n    \"\"\"\n    # Split the text by whitespace and count occurrences of 'item'\n    return len([word for word in text.split() if word == 'item'])\n\n# Example usage with the provided long string (truncated for brevity in explanation)\n"
+      },
+      "prompt_words": 2048,
+      "repeat": 0,
+      "prompt_tokens_per_s": 443.0,
+      "generation_tokens_per_s": 27.3
+    },
+    {
+      "ttft_s": 4.8280983259999175,
+      "elapsed_s": 9.395410496000068,
+      "usage": {
+        "prompt_tokens": 2097,
+        "completion_tokens": 128,
+        "total_tokens": 2225,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 2097,
+        "prompt_ms": 4789.1,
+        "prompt_per_token_ms": 2.284,
+        "prompt_per_second": 437.9,
+        "predicted_n": 128,
+        "predicted_ms": 4600.1,
+        "predicted_per_token_ms": 35.938,
+        "predicted_per_second": 27.8,
+        "draft_n": 7,
+        "draft_n_accepted": 2
+      },
+      "finish_reason": "length",
+      "message": {
+        "role": "assistant",
+        "content": "```python\ndef count_items(text: str) -> int:\n    \"\"\"\n    Counts the number of times the word 'item' appears in the given text.\n    \n    Args:\n        text (str): The input string containing repeated 'item' words.\n        \n    Returns:\n        int: The total count of the word 'item'.\n    \"\"\"\n    # Split the text by whitespace to get individual tokens\n    tokens = text.split()\n    \n    # Count how many tokens are exactly equal to 'item'\n    count = sum(1 for token in tokens if token == 'item')\n"
+      },
+      "prompt_words": 2048,
+      "repeat": 1,
+      "prompt_tokens_per_s": 437.9,
+      "generation_tokens_per_s": 27.8
+    },
+    {
+      "ttft_s": 4.914162543999964,
+      "elapsed_s": 8.50249033,
+      "usage": {
+        "prompt_tokens": 2097,
+        "completion_tokens": 107,
+        "total_tokens": 2204,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 2097,
+        "prompt_ms": 4872.5,
+        "prompt_per_token_ms": 2.324,
+        "prompt_per_second": 430.4,
+        "predicted_n": 107,
+        "predicted_ms": 3621.4,
+        "predicted_per_token_ms": 33.845,
+        "predicted_per_second": 29.5,
+        "draft_n": 7,
+        "draft_n_accepted": 3
+      },
+      "finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "```python\ndef count_items(text):\n    \"\"\"\n    Counts the number of times the word 'item' appears in the given text.\n    \n    Args:\n        text (str): The input string containing repeated 'item' words.\n    \n    Returns:\n        int: The total count of the word 'item'.\n    \"\"\"\n    # Split the text by whitespace and count occurrences of 'item'\n    return len([word for word in text.split() if word == 'item'])\n```"
+      },
+      "prompt_words": 2048,
+      "repeat": 2,
+      "prompt_tokens_per_s": 430.4,
+      "generation_tokens_per_s": 29.5
+    }
+  ],
+  "resources_before": {
+    "system_available_bytes": 25303298048,
+    "cgroup_memory_current_bytes": 22130491392,
+    "cgroup_memory_peak_bytes": 30671155200,
+    "cgroup_memory_max_bytes": 32212254720,
+    "server_tree_rss_bytes": 10029170688,
+    "gpu_memory_mib": [
+      [
+        0,
+        13691,
+        15360
+      ],
+      [
+        1,
+        14343,
+        15360
+      ]
+    ]
+  },
+  "non_streaming_ok": true,
+  "tool_test": {
+    "ok": true,
+    "call": {
+      "ttft_s": 0.005774322000206666,
+      "elapsed_s": 4.233226948000038,
+      "usage": {
+        "prompt_tokens": 282,
+        "completion_tokens": 20,
+        "total_tokens": 302,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 282,
+        "prompt_ms": 3520.4,
+        "prompt_per_token_ms": 12.484,
+        "prompt_per_second": 80.1,
+        "predicted_n": 20,
+        "predicted_ms": 706.1,
+        "predicted_per_token_ms": 35.305,
+        "predicted_per_second": 28.3,
+        "draft_n": 10,
+        "draft_n_accepted": 6
+      },
+      "finish_reason": "tool_calls",
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_19cf6d5a6c494ac1af80fe60",
+            "type": "function",
+            "function": {
+              "name": "echo",
+              "arguments": "{\"text\":\"strata-tool-ok\"}"
+            }
+          }
+        ]
+      }
+    },
+    "followup": {
+      "ttft_s": 1.2424201159999484,
+      "elapsed_s": 1.381767790999902,
+      "usage": {
+        "prompt_tokens": 83,
+        "completion_tokens": 5,
+        "total_tokens": 88,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 83,
+        "prompt_ms": 1205.3,
+        "prompt_per_token_ms": 14.522,
+        "prompt_per_second": 68.9,
+        "predicted_n": 5,
+        "predicted_ms": 171.8,
+        "predicted_per_token_ms": 34.36,
+        "predicted_per_second": 29.1,
+        "draft_n": 2,
+        "draft_n_accepted": 1
+      },
+      "finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "strata-tool-ok"
+      }
+    }
+  },
+  "ok": true,
+  "resource_samples": [
+    {
+      "system_available_bytes": 25303298048,
+      "cgroup_memory_current_bytes": 22130491392,
+      "cgroup_memory_peak_bytes": 30671155200,
+      "cgroup_memory_max_bytes": 32212254720,
+      "server_tree_rss_bytes": 10029170688,
+      "gpu_memory_mib": [
+        [
+          0,
+          13691,
+          15360
+        ],
+        [
+          1,
+          14343,
+          15360
+        ]
+      ]
+    },
+    {
+      "system_available_bytes": 25134899200,
+      "cgroup_memory_current_bytes": 22239019008,
+      "cgroup_memory_peak_bytes": 30671155200,
+      "cgroup_memory_max_bytes": 32212254720,
+      "server_tree_rss_bytes": 10123370496,
+      "gpu_memory_mib": [
+        [
+          0,
+          13725,
+          15360
+        ],
+        [
+          1,
+          14381,
+          15360
+        ]
+      ]
+    },
+    {
+      "system_available_bytes": 25119838208,
+      "cgroup_memory_current_bytes": 22312337408,
+      "cgroup_memory_peak_bytes": 30671155200,
+      "cgroup_memory_max_bytes": 32212254720,
+      "server_tree_rss_bytes": 10192879616,
+      "gpu_memory_mib": [
+        [
+          0,
+          13729,
+          15360
+        ],
+        [
+          1,
+          14387,
+          15360
+        ]
+      ]
+    },
+    {
+      "system_available_bytes": 25057329152,
+      "cgroup_memory_current_bytes": 22261112832,
+      "cgroup_memory_peak_bytes": 30671155200,
+      "cgroup_memory_max_bytes": 32212254720,
+      "server_tree_rss_bytes": 10140336128,
+      "gpu_memory_mib": [
+        [
+          0,
+          13737,
+          15360
+        ],
+        [
+          1,
+          14397,
+          15360
+        ]
+      ]
+    },
+    {
+      "system_available_bytes": 25055010816,
+      "cgroup_memory_current_bytes": 22379765760,
+      "cgroup_memory_peak_bytes": 30671155200,
+      "cgroup_memory_max_bytes": 32212254720,
+      "server_tree_rss_bytes": 10255224832,
+      "gpu_memory_mib": [
+        [
+          0,
+          13737,
+          15360
+        ],
+        [
+          1,
+          14397,
+          15360
+        ]
+      ]
+    },
+    {
+      "system_available_bytes": 25044004864,
+      "cgroup_memory_current_bytes": 22265409536,
+      "cgroup_memory_peak_bytes": 30671155200,
+      "cgroup_memory_max_bytes": 32212254720,
+      "server_tree_rss_bytes": 10137858048,
+      "gpu_memory_mib": [
+        [
+          0,
+          13737,
+          15360
+        ],
+        [
+          1,
+          14397,
+          15360
+        ]
+      ]
+    },
+    {
+      "system_available_bytes": 25046306816,
+      "cgroup_memory_current_bytes": 22384410624,
+      "cgroup_memory_peak_bytes": 30671155200,
+      "cgroup_memory_max_bytes": 32212254720,
+      "server_tree_rss_bytes": 10255650816,
+      "gpu_memory_mib": [
+        [
+          0,
+          13737,
+          15360
+        ],
+        [
+          1,
+          14397,
+          15360
+        ]
+      ]
+    },
+    {
+      "system_available_bytes": 25047146496,
+      "cgroup_memory_current_bytes": 22386577408,
+      "cgroup_memory_peak_bytes": 30671155200,
+      "cgroup_memory_max_bytes": 32212254720,
+      "server_tree_rss_bytes": 10256015360,
+      "gpu_memory_mib": [
+        [
+          0,
+          13737,
+          15360
+        ],
+        [
+          1,
+          14397,
+          15360
+        ]
+      ]
+    },
+    {
+      "system_available_bytes": 25073840128,
+      "cgroup_memory_current_bytes": 22269874176,
+      "cgroup_memory_peak_bytes": 30671155200,
+      "cgroup_memory_max_bytes": 32212254720,
+      "server_tree_rss_bytes": 10139250688,
+      "gpu_memory_mib": [
+        [
+          0,
+          13737,
+          15360
+        ],
+        [
+          1,
+          14397,
+          15360
+        ]
+      ]
+    },
+    {
+      "system_available_bytes": 25080115200,
+      "cgroup_memory_current_bytes": 22388277248,
+      "cgroup_memory_peak_bytes": 30671155200,
+      "cgroup_memory_max_bytes": 32212254720,
+      "server_tree_rss_bytes": 10256887808,
+      "gpu_memory_mib": [
+        [
+          0,
+          13737,
+          15360
+        ],
+        [
+          1,
+          14397,
+          15360
+        ]
+      ]
+    },
+    {
+      "system_available_bytes": 25107886080,
+      "cgroup_memory_current_bytes": 22271827968,
+      "cgroup_memory_peak_bytes": 30671155200,
+      "cgroup_memory_max_bytes": 32212254720,
+      "server_tree_rss_bytes": 10140114944,
+      "gpu_memory_mib": [
+        [
+          0,
+          13737,
+          15360
+        ],
+        [
+          1,
+          14397,
+          15360
+        ]
+      ]
+    },
+    {
+      "system_available_bytes": 25085509632,
+      "cgroup_memory_current_bytes": 22273556480,
+      "cgroup_memory_peak_bytes": 30671155200,
+      "cgroup_memory_max_bytes": 32212254720,
+      "server_tree_rss_bytes": 10140852224,
+      "gpu_memory_mib": [
+        [
+          0,
+          13737,
+          15360
+        ],
+        [
+          1,
+          14397,
+          15360
+        ]
+      ]
+    },
+    {
+      "system_available_bytes": 25058082816,
+      "cgroup_memory_current_bytes": 22391177216,
+      "cgroup_memory_peak_bytes": 30671155200,
+      "cgroup_memory_max_bytes": 32212254720,
+      "server_tree_rss_bytes": 10258599936,
+      "gpu_memory_mib": [
+        [
+          0,
+          13737,
+          15360
+        ],
+        [
+          1,
+          14397,
+          15360
+        ]
+      ]
+    },
+    {
+      "system_available_bytes": 25059561472,
+      "cgroup_memory_current_bytes": 22393253888,
+      "cgroup_memory_peak_bytes": 30671155200,
+      "cgroup_memory_max_bytes": 32212254720,
+      "server_tree_rss_bytes": 10258612224,
+      "gpu_memory_mib": [
+        [
+          0,
+          13737,
+          15360
+        ],
+        [
+          1,
+          14397,
+          15360
+        ]
+      ]
+    },
+    {
+      "system_available_bytes": 25122918400,
+      "cgroup_memory_current_bytes": 22280769536,
+      "cgroup_memory_peak_bytes": 30671155200,
+      "cgroup_memory_max_bytes": 32212254720,
+      "server_tree_rss_bytes": 10144686080,
+      "gpu_memory_mib": [
+        [
+          0,
+          13737,
+          15360
+        ],
+        [
+          1,
+          14397,
+          15360
+        ]
+      ]
+    },
+    {
+      "system_available_bytes": 25128607744,
+      "cgroup_memory_current_bytes": 22280798208,
+      "cgroup_memory_peak_bytes": 30671155200,
+      "cgroup_memory_max_bytes": 32212254720,
+      "server_tree_rss_bytes": 10144718848,
+      "gpu_memory_mib": [
+        [
+          0,
+          13737,
+          15360
+        ],
+        [
+          1,
+          14397,
+          15360
+        ]
+      ]
+    },
+    {
+      "system_available_bytes": 25057660928,
+      "cgroup_memory_current_bytes": 22398783488,
+      "cgroup_memory_peak_bytes": 30671155200,
+      "cgroup_memory_max_bytes": 32212254720,
+      "server_tree_rss_bytes": 10262351872,
+      "gpu_memory_mib": [
+        [
+          0,
+          13737,
+          15360
+        ],
+        [
+          1,
+          14397,
+          15360
+        ]
+      ]
+    },
+    {
+      "system_available_bytes": 25056595968,
+      "cgroup_memory_current_bytes": 22399647744,
+      "cgroup_memory_peak_bytes": 30671155200,
+      "cgroup_memory_max_bytes": 32212254720,
+      "server_tree_rss_bytes": 10262364160,
+      "gpu_memory_mib": [
+        [
+          0,
+          13737,
+          15360
+        ],
+        [
+          1,
+          14397,
+          15360
+        ]
+      ]
+    },
+    {
+      "system_available_bytes": 25051279360,
+      "cgroup_memory_current_bytes": 22403018752,
+      "cgroup_memory_peak_bytes": 30671155200,
+      "cgroup_memory_max_bytes": 32212254720,
+      "server_tree_rss_bytes": 10262376448,
+      "gpu_memory_mib": [
+        [
+          0,
+          13737,
+          15360
+        ],
+        [
+          1,
+          14397,
+          15360
+        ]
+      ]
+    },
+    {
+      "system_available_bytes": 25141358592,
+      "cgroup_memory_current_bytes": 22289162240,
+      "cgroup_memory_peak_bytes": 30671155200,
+      "cgroup_memory_max_bytes": 32212254720,
+      "server_tree_rss_bytes": 10147856384,
+      "gpu_memory_mib": [
+        [
+          0,
+          13737,
+          15360
+        ],
+        [
+          1,
+          14397,
+          15360
+        ]
+      ]
+    },
+    {
+      "system_available_bytes": 25144868864,
+      "cgroup_memory_current_bytes": 22289145856,
+      "cgroup_memory_peak_bytes": 30671155200,
+      "cgroup_memory_max_bytes": 32212254720,
+      "server_tree_rss_bytes": 10147856384,
+      "gpu_memory_mib": [
+        [
+          0,
+          13737,
+          15360
+        ],
+        [
+          1,
+          14397,
+          15360
+        ]
+      ]
+    },
+    {
+      "system_available_bytes": 25044459520,
+      "cgroup_memory_current_bytes": 22407168000,
+      "cgroup_memory_peak_bytes": 30671155200,
+      "cgroup_memory_max_bytes": 32212254720,
+      "server_tree_rss_bytes": 10265489408,
+      "gpu_memory_mib": [
+        [
+          0,
+          13737,
+          15360
+        ],
+        [
+          1,
+          14397,
+          15360
+        ]
+      ]
+    },
+    {
+      "system_available_bytes": 25043189760,
+      "cgroup_memory_current_bytes": 22407667712,
+      "cgroup_memory_peak_bytes": 30671155200,
+      "cgroup_memory_max_bytes": 32212254720,
+      "server_tree_rss_bytes": 10265493504,
+      "gpu_memory_mib": [
+        [
+          0,
+          13737,
+          15360
+        ],
+        [
+          1,
+          14397,
+          15360
+        ]
+      ]
+    },
+    {
+      "system_available_bytes": 25109344256,
+      "cgroup_memory_current_bytes": 22295138304,
+      "cgroup_memory_peak_bytes": 30671155200,
+      "cgroup_memory_max_bytes": 32212254720,
+      "server_tree_rss_bytes": 10150854656,
+      "gpu_memory_mib": [
+        [
+          0,
+          13737,
+          15360
+        ],
+        [
+          1,
+          14397,
+          15360
+        ]
+      ]
+    },
+    {
+      "system_available_bytes": 25138106368,
+      "cgroup_memory_current_bytes": 22295851008,
+      "cgroup_memory_peak_bytes": 30671155200,
+      "cgroup_memory_max_bytes": 32212254720,
+      "server_tree_rss_bytes": 10151010304,
+      "gpu_memory_mib": [
+        [
+          0,
+          13737,
+          15360
+        ],
+        [
+          1,
+          14397,
+          15360
+        ]
+      ]
+    },
+    {
+      "system_available_bytes": 25049358336,
+      "cgroup_memory_current_bytes": 22413680640,
+      "cgroup_memory_peak_bytes": 30671155200,
+      "cgroup_memory_max_bytes": 32212254720,
+      "server_tree_rss_bytes": 10268635136,
+      "gpu_memory_mib": [
+        [
+          0,
+          13737,
+          15360
+        ],
+        [
+          1,
+          14397,
+          15360
+        ]
+      ]
+    },
+    {
+      "system_available_bytes": 25048293376,
+      "cgroup_memory_current_bytes": 22414196736,
+      "cgroup_memory_peak_bytes": 30671155200,
+      "cgroup_memory_max_bytes": 32212254720,
+      "server_tree_rss_bytes": 10268639232,
+      "gpu_memory_mib": [
+        [
+          0,
+          13737,
+          15360
+        ],
+        [
+          1,
+          14397,
+          15360
+        ]
+      ]
+    }
+  ],
+  "resources_after": {
+    "system_available_bytes": 25044434944,
+    "cgroup_memory_current_bytes": 22414127104,
+    "cgroup_memory_peak_bytes": 30671155200,
+    "cgroup_memory_max_bytes": 32212254720,
+    "server_tree_rss_bytes": 10268598272,
+    "gpu_memory_mib": [
+      [
+        0,
+        13737,
+        15360
+      ],
+      [
+        1,
+        14397,
+        15360
+      ]
+    ]
+  }
+}

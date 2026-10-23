@@ -1,0 +1,28 @@
+[
+  {
+    "client": "opencode",
+    "version": "2.0.28",
+    "model": "strata-iq2_xs",
+    "model_list": [
+      "strata-kaggle/strata-iq2_xs"
+    ],
+    "session_id": 359712839,
+    "shutdown_status": "CANCEL_ACKNOWLEDGED",
+    "kernel": "ninnix/strata-kaggle-client-probe",
+    "accelerator": "CPU only",
+    "inference_tested": false
+  },
+  {
+    "client": "pi",
+    "version": "1.3.0",
+    "model": "strata-iq2_xs",
+    "model_list": [
+      "strata-kaggle  strata-iq2_xs  8.2K     2.0K     yes       no    "
+    ],
+    "session_id": 359719386,
+    "shutdown_status": "CANCEL_ACKNOWLEDGED",
+    "kernel": "ninnix/strata-kaggle-client-probe",
+    "accelerator": "CPU only",
+    "inference_tested": false
+  }
+]

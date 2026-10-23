@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+.venv-kaggle/
+*.log
+.env
+.env.*
+!.env.example
+kaggle.json
+/sok-cache/
+/strata-cache/
+/strata-results/
+/benchmark-results.json
+/agent-results.json
+.vscode/
+.idea/

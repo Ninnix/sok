@@ -1,0 +1,47 @@
+[
+  {
+    "prompt_words": 128,
+    "prompt_tokens": 177,
+    "coder": {
+      "generation_tokens_per_s": 26.5,
+      "prompt_tokens_per_s": 120.6,
+      "ttft_s": 1.5094717880000796
+    },
+    "q2": {
+      "generation_tokens_per_s": 28.533333333333335,
+      "prompt_tokens_per_s": 122.49999999999999,
+      "ttft_s": 1.484379049333332
+    },
+    "generation_change_percent": 7.672955974842766
+  },
+  {
+    "prompt_words": 512,
+    "prompt_tokens": 561,
+    "coder": {
+      "generation_tokens_per_s": 29.03333333333333,
+      "prompt_tokens_per_s": 268.8333333333333,
+      "ttft_s": 2.12327298333336
+    },
+    "q2": {
+      "generation_tokens_per_s": 33.233333333333334,
+      "prompt_tokens_per_s": 257.53333333333336,
+      "ttft_s": 2.211750481000081
+    },
+    "generation_change_percent": 14.46613088404134
+  },
+  {
+    "prompt_words": 2048,
+    "prompt_tokens": 2097,
+    "coder": {
+      "generation_tokens_per_s": 28.2,
+      "prompt_tokens_per_s": 437.09999999999997,
+      "ttft_s": 4.838469852999954
+    },
+    "q2": {
+      "generation_tokens_per_s": 32.4,
+      "prompt_tokens_per_s": 409.9666666666667,
+      "ttft_s": 5.151791902000014
+    },
+    "generation_change_percent": 14.893617021276583
+  }
+]

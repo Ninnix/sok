@@ -1,0 +1,36 @@
+{
+  "ok": true,
+  "model": "strata-coder",
+  "runs": [
+    {
+      "ok": true,
+      "turns": 4,
+      "local_tools": [
+        "read_file",
+        "write_file",
+        "run_test"
+      ],
+      "elapsed_s": 27.44509584199841
+    },
+    {
+      "ok": true,
+      "turns": 4,
+      "local_tools": [
+        "read_file",
+        "write_file",
+        "run_test"
+      ],
+      "elapsed_s": 21.71928935300093
+    },
+    {
+      "ok": true,
+      "turns": 4,
+      "local_tools": [
+        "read_file",
+        "write_file",
+        "run_test"
+      ],
+      "elapsed_s": 8.067597856999782
+    }
+  ]
+}

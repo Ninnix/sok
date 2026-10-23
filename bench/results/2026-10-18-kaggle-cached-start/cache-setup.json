@@ -1,0 +1,34 @@
+{
+  "kernel": "ninnix/strata-kaggle-model-cache-cpu",
+  "kernel_version": 4,
+  "session_id": 359731887,
+  "accelerator": "CPU only",
+  "model": "iq2_xs",
+  "model_bytes": 68026093024,
+  "verified_files": [
+    "Verified Qwen3.8-Flash-Next-GSQ-RCO-IQ2_XS-00001-of-00002.gguf: 39225954592 bytes, SHA-256 92cee27ae5bbadcd732416a0f7a7f0acc092399dbbe8f5a5efa707c2ec0a49d7",
+    "Verified Qwen3.8-Flash-Next-GSQ-RCO-IQ2_XS-00002-of-00002.gguf: 28800138432 bytes, SHA-256 316b46f3a2dbd68c900f43136ab9449f9dcc3725dfd8c794847c204bc161e113"
+  ],
+  "worker_to_verified_files_s": 1489.055651127,
+  "upload_and_create_s": 2855.5959011100003,
+  "worker_to_dataset_creation_accepted_s": 4344.651552237,
+  "dataset": "ninnix/strata-kaggle-iq2-xs-weights",
+  "dataset_status": {
+    "status": "ready",
+    "current_version_number": 1
+  },
+  "worker_status_after_upload": "COMPLETE",
+  "processing_status_retry": "An initial HTTP 403 ended the first worker; the dataset later reported ready. The worker now retries nonzero status responses.",
+  "injected_credentials_probe": {
+    "returncode": 0,
+    "elapsed_s": 7.756705436000004,
+    "upload_started": true,
+    "upload_successful": true,
+    "http_error": null,
+    "bytes": 67108864,
+    "accelerator": "CPU only",
+    "kaggle_api_token_provided": false,
+    "notebook_credentials": true,
+    "temporary_dataset_deleted": true
+  }
+}

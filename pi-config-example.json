@@ -1,0 +1,28 @@
+{
+  "$schema": "https://pi.dev/schemas/models.schema.json",
+  "providers": {
+    "sok": {
+      "baseUrl": "https://YOUR-SESSION.lhr.life/v1",
+      "api": "openai-completions",
+      "apiKey": "$STRATA_API_KEY",
+      "authHeader": true,
+      "models": [
+        {
+          "id": "strata-iq2_xs",
+          "name": "Strata IQ2_XS (Kaggle)",
+          "reasoning": true,
+          "input": ["text"],
+          "contextWindow": 8192,
+          "maxTokens": 2048,
+          "cost": {"input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0},
+          "compat": {
+            "supportsStore": false,
+            "supportsDeveloperRole": false,
+            "supportsReasoningEffort": true,
+            "maxTokensField": "max_tokens"
+          }
+        }
+      ]
+    }
+  }
+}

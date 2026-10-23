@@ -1,0 +1,93 @@
+{
+  "model": "coder",
+  "context": 8192,
+  "phases_s": {
+    "install_and_build": 14.86479570299997,
+    "model_download_and_verify": 701.2437690680001,
+    "pack": 8.244170882999924,
+    "server_start_to_ready": 140.02547897599993
+  },
+  "gpus": [
+    [
+      "0",
+      "Tesla T4",
+      "15360",
+      "7.5",
+      "580.178.04"
+    ],
+    [
+      "1",
+      "Tesla T4",
+      "15360",
+      "7.5",
+      "580.178.04"
+    ]
+  ],
+  "ram_bytes": 33658306560,
+  "cpu_count": 4,
+  "disk_free_bytes": 20940468224,
+  "persistent_disk": true,
+  "cache_dir": "/kaggle/working/strata-cache",
+  "model_dir": "/kaggle/temp/strata-models/coder",
+  "model_from_attached_dataset": false,
+  "strata_revision": "477ac13cbe8e582c20484871ce459d20d82df09d",
+  "cuda_compiler": "nvcc: NVIDIA (R) Cuda compiler driver\nCopyright (c) 2005-2025 NVIDIA Corporation\nBuilt on Fri_Feb_21_20:23:50_PST_2025\nCuda compilation tools, release 12.8, V12.8.93\nBuild cuda_12.8.r12.8/compiler.35583870_0",
+  "cached_engine_sha256": "0f6029cab4fa28308b3e16c7879c639f899e8b92e8a659afd94a56854ac2308d",
+  "model_files": [
+    {
+      "path": "/kaggle/temp/strata-models/coder/Qwen3.8-Flash-Next-GSQ-RCO-IQ1_M-00001-of-00002.gguf",
+      "bytes": 29608446496,
+      "sha256": "e11083ba855e7666b48ea3f2db6a9c3a20c18751a012cc24f948de91b7087fad"
+    },
+    {
+      "path": "/kaggle/temp/strata-models/coder/Qwen3.8-Flash-Next-GSQ-RCO-IQ1_M-00002-of-00002.gguf",
+      "bytes": 28800138432,
+      "sha256": "316b46f3a2dbd68c900f43136ab9449f9dcc3725dfd8c794847c204bc161e113"
+    }
+  ],
+  "configuration": {
+    "exe": "/kaggle/working/strata-cache/Strata-Kaggle/build-kaggle/strata",
+    "cwd": "/kaggle/working/strata-cache/Strata-Kaggle",
+    "backend": "cuda",
+    "gpu": [
+      0,
+      1
+    ],
+    "gpu_order": "as_given",
+    "layer_split": "24",
+    "tokenizer": "/kaggle/working/strata-cache/packs/coder/tokenizer",
+    "model_name": "strata-coder",
+    "host": "127.0.0.1",
+    "port": 8080,
+    "open_browser": false,
+    "log": "/kaggle/working/strata-results/engine.log",
+    "engine_silence_s": 900,
+    "args": [
+      "--pack",
+      "/kaggle/working/strata-cache/packs/coder",
+      "--native",
+      "/kaggle/temp/strata-models/coder/Qwen3.8-Flash-Next-GSQ-RCO-IQ1_M-00001-of-00002.gguf",
+      "--ple-gguf",
+      "/kaggle/temp/strata-models/coder/Qwen3.8-Flash-Next-GSQ-RCO-IQ1_M-00002-of-00002.gguf",
+      "--expert-profile",
+      "/kaggle/working/strata-cache/Strata-Kaggle/data/expert-profile-coder.bin",
+      "--expert-cache",
+      "auto",
+      "--resident-experts",
+      "--trim-stage-weights",
+      "--max-context",
+      "8192",
+      "--kv",
+      "q4_0",
+      "--prefill",
+      "1024",
+      "--spec",
+      "2",
+      "--ple-io",
+      "direct",
+      "--pool-workers",
+      "3"
+    ]
+  },
+  "cold_start_to_ready_s": 864.5966999950001
+}
