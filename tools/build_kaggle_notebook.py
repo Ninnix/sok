@@ -13,7 +13,8 @@ def build():
     calls = ["", "hardware()", "install()", "download()", "configure()",
              "API_KEY = start_server()", "try:\n    start_tunnel(API_KEY)\nexcept BaseException:\n    stop()\n    raise", ""]
     notes = [
-        "Only the selected model is downloaded. IQ2_XS is the default; set MODEL = 'coder' or 'q2' for an alternative. "
+        "MODEL = None lets Strata select its default for this hardware. Set MODEL and optionally FAMILY "
+        "to any size and family in the installed Strata release's catalog. Only that selection is downloaded. "
         "Enable **Session options → Persistence → Files only** before running. The Kaggle CLI cannot set this UI option. "
         "sok (Strata on Kaggle) installs official Strata without patches. "
         "The default cache is /kaggle/working/sok. Kaggle's saved-output size limit may be smaller than the model; "
@@ -24,11 +25,12 @@ def build():
         "Check the latest stable release of official Strata and build it for sm_75. "
         "Strata's CMake downloads its own dependencies. The checkout, virtual environment and successful build "
         "persist in CACHE_DIR. If that release is already built, installation and compilation are skipped.",
-        "Both shards of one model are required: weights and the IQ4_NL n-gram table. "
-        "Downloads resume, and every shard is checked against its pinned size and SHA-256. "
+        "The installed Strata release supplies each model's filenames, shard count, pinned URLs and hashes. "
+        "Downloads resume, and every selected file is checked against its pinned size and SHA-256. "
         "STAGE_CACHED_MODEL optionally copies attached shards to scratch before checking and loading them.",
-        "Use a native pack without duplicating experts.bin, split at layer 24, trim each stage's dense weights, "
-        "and start with 8K context and q4_0 KV. MTP is omitted for the initial memory budget.",
+        "Strata's own setup.py prepares the selected family and writes its configuration, using the locally built engine. "
+        "It selects the GPU layout and any pack conversion the model needs. Prepared data uses MODEL_DOWNLOAD_DIR; "
+        "allow disk space for those files as well as the download. Context starts at 8K; images are disabled.",
         "Bind to localhost, require an API key, wait for loaded health, and verify that unauthenticated requests fail. "
         "Secrets stay in process memory and are never written into the config or notebook output.",
         "Disabled by default while Kaggle permission is unconfirmed. Its AUP prohibits server farming and resource abuse. "
@@ -51,7 +53,7 @@ bench = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(bench)
 try:
     local_base = f"http://127.0.0.1:{{PORT}}/v1"
-    model_id = "strata-" + MODEL
+    model_id = api_json("/v1/models", API_KEY)["data"][0]["id"]
     if RUN_BENCHMARKS:
         result = bench.benchmark(local_base, API_KEY, model_id, BENCHMARK_WORDS,
                                  BENCHMARK_REPEATS, PROCESSES["server"].pid,
@@ -72,6 +74,8 @@ finally:
         cells.append({"cell_type": "markdown", "metadata": {}, "id": f"section-{i+1}",
                       "source": [f"## {i+1}. {title}\n\n", notes[i] + "\n"]})
         code = source.strip() + "\n\n" + (ending if i == 7 else calls[i]) + "\n"
+        if i == 0:
+            code += "\nSTRATA_MODELS_SOURCE = " + repr((ROOT / "strata_models.py").read_text()) + "\n"
         cells.append({"cell_type": "code", "metadata": {}, "id": f"code-{i+1}",
                       "execution_count": None, "outputs": [], "source": code.splitlines(keepends=True)})
     return {"nbformat": 4, "nbformat_minor": 5, "cells": cells,

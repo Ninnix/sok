@@ -83,14 +83,17 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(session['version'], 5)
 
     def test_cache_worker_retries_processing_status_without_downloading_again(self):
-        variant = dict(quant='IQ2_XS', repo='owner/model', revision='pinned', shards=[(1, 'test-hash')] * 2)
+        variant = dict(id='swift-iq2_xs', family='swift', model='IQ2_XS', license='original license', files=[
+            dict(path=f'weights-{i}.gguf', url='https://example.invalid/model', bytes=1, sha256='test-hash') for i in range(2)])
         ok = SimpleNamespace(returncode=0, stdout='')
         pending = SimpleNamespace(returncode=1, stdout='')
         ready = SimpleNamespace(returncode=0, stdout='ready')
         with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, KAGGLE_API_V1_TOKEN='injected-token-file'), \
                 patch.object(cache_runtime, 'Path', return_value=Path(tmp)), \
                 patch.object(cache_runtime.shutil, 'disk_usage', return_value=SimpleNamespace(free=8 * 2**30)), \
-                patch.object(runtime, 'MODELS', {'iq2_xs': variant}), patch.object(runtime, 'REPORT', {}), \
+                patch.object(runtime, 'select_model', return_value=variant), patch.object(runtime, 'REPORT', {}), \
+                patch.object(runtime, 'checkout_strata'), patch.object(runtime, 'CACHE_DIR', Path(tmp)), \
+                patch.object(runtime, 'MODEL'), patch.object(runtime, 'FAMILY'), patch.object(runtime, 'LAUNCH_ID'), \
                 patch.object(runtime, 'announce_session'), \
                 patch.object(runtime, 'fetch_model_file', side_effect=lambda url, path, size, digest: path.write_bytes(b'x')) as fetch, \
                 patch.object(cache_runtime.subprocess, 'run', side_effect=[ok, ok, ok, pending, ready]), \
@@ -192,7 +195,7 @@ class ClientTests(unittest.TestCase):
 
     def test_notebook_reports_the_runtime_session_not_the_version_number(self):
         with patch.dict(os.environ, {"KAGGLE_CONTAINER_NAME": "kaggle_example-359710527-webtier"}), \
-                patch.object(runtime, "MODEL", "invalid"), patch.object(runtime, "LAUNCH_ID", "test-run"), \
+                patch.object(runtime, "CONTEXT", 0), patch.object(runtime, "LAUNCH_ID", "test-run"), \
                 contextlib.redirect_stdout(io.StringIO()) as output:
             with self.assertRaises(ValueError):
                 runtime.hardware()

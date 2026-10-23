@@ -19,6 +19,11 @@ import uuid
 ROOT = Path(__file__).resolve().parent
 
 
+def model_key(model=None, family=None):
+    model = (model or "default").lower()
+    return family.lower() + "/" + model if family else model
+
+
 def load_kaggle_token():
     if os.environ.get('KAGGLE_API_TOKEN'):
         return os.environ['KAGGLE_API_TOKEN']
@@ -44,7 +49,8 @@ def discover(connection):
         headers={"Authorization": "Bearer " + connection["STRATA_API_KEY"]})
     with urllib.request.urlopen(request, timeout=20) as response:
         models = json.load(response)["data"]
-    if len(models) != 1 or models[0]["id"] not in ("strata-iq2_xs", "strata-coder", "strata-q2"):
+    if (len(models) != 1 or not isinstance(models[0].get("id"), str)
+            or not models[0]["id"].strip()):
         raise RuntimeError("Expected one running Strata model in /v1/models")
     return models[0]["id"]
 
@@ -234,6 +240,7 @@ def launch(args, public, session):
     notebook = json.loads((ROOT / 'sok.ipynb').read_text())
     cell = next(c for c in notebook['cells'] if c['cell_type'] == 'code')
     cell['source'] += [f'\nMODEL = {args.model!r}\nCLIENT_PUBLIC_KEY = {public!r}\n',
+        f'FAMILY = {args.family!r}\n',
         f'LAUNCH_ID = {session["launch_id"]!r}\n',
         f'TUNNEL = "localhost.run"\nREMOTE_ACCESS_PERMITTED = True\nSERVE_SECONDS = {args.seconds}\n',
         f'IDLE_SECONDS = {args.idle_seconds}\n',
@@ -295,7 +302,8 @@ def install_launchers():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--kernel', default=json.loads((ROOT / 'kernel-metadata.json').read_text())['id'])
-    parser.add_argument('--model', choices=['iq2_xs', 'coder', 'q2'], default='iq2_xs')
+    parser.add_argument('--model', help="any Strata model size; omitted: Strata's default for the Kaggle hardware")
+    parser.add_argument('--family', help='optional Strata family, such as qwen, swift, coder, unsloth or qwen36')
     parser.add_argument('--seconds', type=int, default=1800)
     parser.add_argument('--idle-seconds', type=int, default=900, help='finish the notebook after this many idle seconds; default 900, 0 disables it')
     parser.add_argument('--client', choices=['opencode', 'pi'], help='register the provider and stop Kaggle when this client exits')
@@ -303,9 +311,9 @@ def main():
     parser.add_argument('--stop', action='store_true', help='cancel the recorded Kaggle session and confirm shutdown')
     parser.add_argument('--keep-running', action='store_true', help='leave Kaggle running after the client exits')
     parser.add_argument('--install-launchers', action='store_true', help='install sok-opencode and sok-pi in ~/.local/bin')
-    parser.add_argument('--model-dataset', help='optional Kaggle dataset containing the selected GGUF pair')
+    parser.add_argument('--model-dataset', help='optional Kaggle dataset containing the selected model files')
     parser.add_argument('--stage-model', action=argparse.BooleanOptionalAction, default=None,
-                        help='copy attached model shards to scratch before loading; --no-stage-model reads them in place')
+                        help='copy attached model files to scratch before loading; --no-stage-model reads them in place')
     parser.add_argument('--state-dir', type=Path, default=Path.home() / '.cache/sok')
     parser.add_argument('command', nargs=argparse.REMAINDER, help='client arguments, or a local command after --')
     args = parser.parse_args()
@@ -314,9 +322,10 @@ def main():
         return 0
     defaults_path = args.state_dir.expanduser() / 'defaults.json'
     defaults = json.loads(defaults_path.read_text()) if defaults_path.exists() else {}
-    args.model_dataset = args.model_dataset or defaults.get('models', {}).get(args.model, {}).get('model_dataset')
+    model_defaults = defaults.get('models', {}).get(model_key(args.model, args.family), {})
+    args.model_dataset = args.model_dataset or model_defaults.get('model_dataset')
     if args.stage_model is None:
-        args.stage_model = defaults.get('models', {}).get(args.model, {}).get('stage_model', False)
+        args.stage_model = model_defaults.get('stage_model', False)
     if not load_kaggle_token():
         parser.error('Set KAGGLE_API_TOKEN or save your token in ~/.kaggle/access_token')
     if not 60 <= args.seconds <= 10800:

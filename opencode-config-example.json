@@ -1,6 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "sok/strata-iq2_xs",
+  "model": "sok/qwen3.8-flash-next-swift-iq2_xs",
   "providers": {
     "sok": {
       "package": "@opencode/ai/providers/openai-compatible",
@@ -13,8 +13,8 @@
         "chunkTimeout": 900000
       },
       "models": {
-        "strata-iq2_xs": {
-          "name": "Strata IQ2_XS",
+        "qwen3.8-flash-next-swift-iq2_xs": {
+          "name": "Strata Swift IQ2_XS",
           "capabilities": {"tools": true, "input": ["text"], "output": ["text"]},
           "compatibility": {"reasoningField": "reasoning_content"},
           "limit": {"context": 8192, "output": 2048}

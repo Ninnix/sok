@@ -89,11 +89,12 @@ class DownloadTests(unittest.TestCase):
 
     def test_staged_cache_resumes_and_rejects_corruption_before_publication(self):
         files = [b'weights' * 200, b'ngram' * 200]
-        variant = dict(quant='IQ2_XS', repo='owner/model', revision='pinned',
-            shards=[(len(data), hashlib.sha256(data).hexdigest()) for data in files])
+        variant = dict(id='iq2_xs', family='qwen', model='IQ2_XS', files=[
+            dict(path=f'weights-{i}.gguf', url='https://example.invalid/model', bytes=len(data),
+                 sha256=hashlib.sha256(data).hexdigest()) for i, data in enumerate(files)])
         for corrupt_source in (False, True):
             with self.subTest(corrupt_source=corrupt_source), tempfile.TemporaryDirectory() as tmp, \
-                    patch.object(runtime, 'MODEL', 'iq2_xs'), patch.object(runtime, 'MODELS', {'iq2_xs': variant}), \
+                    patch.object(runtime, 'SELECTED_MODEL', variant), patch.object(runtime, 'select_model', return_value=variant), \
                     patch.object(runtime, 'MODEL_DIR', Path(tmp) / 'input'), \
                     patch.object(runtime, 'MODEL_DOWNLOAD_DIR', Path(tmp) / 'scratch'), \
                     patch.object(runtime, 'OUTPUT_DIR', Path(tmp) / 'results'), \
@@ -120,15 +121,15 @@ class DownloadTests(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError, 'SHA-256 mismatch'):
                     runtime.download()
 
-    def test_selected_model_and_persistence_defaults(self):
-        self.assertEqual(runtime.MODEL, "iq2_xs")
+    def test_model_selection_and_persistence_defaults(self):
+        self.assertIsNone(runtime.MODEL)
+        self.assertIsNone(runtime.FAMILY)
         self.assertTrue(runtime.PERSISTENT_DISK)
         self.assertTrue(str(runtime.CACHE_DIR).startswith("/kaggle/working/"))
-        for name, quant in (("coder", "IQ1_M"), ("q2", "Q2_0"), ("iq2_xs", "IQ2_XS")):
-            with patch.object(runtime, "MODEL", name):
-                paths = runtime.model_paths()
-                self.assertEqual(len(paths), 2)
-                self.assertTrue(all(quant in str(p) for p in paths))
+        for count in (1, 2, 3, 6):
+            variant = dict(id="any-model", files=[dict(path=f"weights-{i}.gguf") for i in range(count)])
+            with self.subTest(count=count), patch.object(runtime, "SELECTED_MODEL", variant):
+                self.assertEqual(len(runtime.model_paths()), count)
 
 
 class NotebookTests(unittest.TestCase):
@@ -169,27 +170,36 @@ class NotebookTests(unittest.TestCase):
                 connection = connect.read_connection(log, private)
                 self.assertEqual(connection, {"STRATA_BASE_URL": base, "STRATA_API_KEY": key})
 
-    def test_native_pack_launch_contract(self):
-        with tempfile.TemporaryDirectory() as tmp, \
-                patch.object(runtime, "CACHE_DIR", Path(tmp)), \
-                patch.object(runtime, "OUTPUT_DIR", Path(tmp) / "results"), \
-                patch.object(runtime, "MODEL_DIR", Path(tmp) / "model"), \
-                patch.object(runtime, "run"):
-            Path(runtime.MODEL_DIR).mkdir()
-            for model, info in runtime.MODELS.items():
-                with self.subTest(model=model), patch.object(runtime, "MODEL", model):
-                    for path in runtime.model_paths():
-                        path.touch()
-                    cfg = runtime.configure()
-                    args = cfg["args"]
-                    self.assertEqual(cfg["model_name"], "strata-" + model)
-                    self.assertTrue(args[args.index("--expert-profile") + 1].endswith(info["profile"]))
-                    self.assertGreaterEqual(int(args[args.index("--spec") + 1]), 2)
-                    self.assertGreater(int(args[args.index("--prefill") + 1]), 0)
-                    self.assertIn("--native", args)
-                    self.assertNotIn("--mtp", args)
-                    self.assertEqual(cfg["gpu"], [0, 1])
-                    self.assertEqual(cfg["layer_split"], "24")
+    def test_upstream_configuration_preserves_each_models_engine_options(self):
+        for arch, gpu, args in (("qwen35moe", 0, ["--native", "qwen36.gguf", "--mtp", "2"]),
+                               ("qwen4exp", [0, 1], ["--pack", "pack", "--native", "first-of-six.gguf", "--kv", "int8"])):
+            with self.subTest(arch=arch), tempfile.TemporaryDirectory() as tmp, \
+                    patch.object(runtime, "CACHE_DIR", Path(tmp)), \
+                    patch.object(runtime, "OUTPUT_DIR", Path(tmp) / "results"), \
+                    patch.object(runtime, "MODEL_DIR", Path(tmp) / "model"), \
+                    patch.object(runtime, "MODEL_DOWNLOAD_DIR", Path(tmp) / "scratch"), \
+                    patch.object(runtime, "SELECTED_MODEL", dict(id="upstream", files=[dict(path="weights.gguf", sha256="a" * 64)])), \
+                    patch.object(runtime, "REPORT", dict(strata_revision="source-commit", phases_s={})), \
+                    patch.object(runtime.subprocess, "check_output", return_value="strata 0.1.48\n"), \
+                    patch.object(runtime, "strata_request", return_value=dict(
+                        model_name="upstream-model", arch=arch, gpu=gpu, args=args.copy(), host="0.0.0.0")):
+                engine = Path(tmp) / "strata/build/strata"
+                engine.parent.mkdir(parents=True)
+                engine.write_bytes(b"built-engine")
+                runtime.MODEL_DIR.mkdir()
+                (runtime.MODEL_DIR / "weights.gguf").write_bytes(b"verified-weights")
+                cfg = runtime.configure()
+                self.assertEqual(cfg["args"], args)
+                self.assertEqual(cfg["gpu"], gpu)
+                self.assertEqual(cfg["arch"], arch)
+                self.assertEqual(cfg["model_name"], "upstream-model")
+                self.assertEqual(cfg["exe"], str(engine))
+                self.assertEqual(cfg["host"], "127.0.0.1")
+                self.assertNotIn("api_key", cfg)
+                verified = Path(tmp) / "scratch/verified/upstream/weights.gguf"
+                self.assertTrue(verified.is_symlink())
+                self.assertEqual(verified.with_suffix(".gguf.done").read_text(), "sha256 " + "a" * 64)
+                self.assertFalse((runtime.MODEL_DIR / "weights.gguf.done").exists())
 
 
 class StreamingTests(unittest.TestCase):

@@ -8,8 +8,8 @@
       "authHeader": true,
       "models": [
         {
-          "id": "strata-iq2_xs",
-          "name": "Strata IQ2_XS (Kaggle)",
+          "id": "qwen3.8-flash-next-swift-iq2_xs",
+          "name": "Strata Swift IQ2_XS (Kaggle)",
           "reasoning": true,
           "input": ["text"],
           "contextWindow": 8192,

@@ -9,7 +9,8 @@ while executing their tools locally.
 - Check the latest release each run. Skip dependency installation and compilation
   when that release is already built; rebuild after an update or incomplete build.
 - Record success only after a completed build. Retry failures on the next run.
-- Download only the selected model and verify both shards against pinned hashes.
+- Use Strata's default when no model is specified, and accept every model/family
+  in the installed release's catalog. Download only its files and verify their pinned hashes.
 - Reuse attached model datasets; retain resumable downloads and optional staging.
 - Use Strata's own server and configuration options, authenticated on localhost.
 - Keep the self-contained notebook, local Pi/OpenCode launchers, bounded sessions,

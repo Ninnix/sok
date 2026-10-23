@@ -20,7 +20,8 @@ inference through Strata's authenticated OpenAI-compatible API.
 1. Import [sok.ipynb](sok.ipynb) into Kaggle.
 2. Select **GPU T4 ×2**, **Internet on**, and
    **Session options → Persistence → Files only**.
-3. Keep `MODEL = "iq2_xs"`, or select `"coder"` or `"q2"` in the first cell.
+3. Leave `MODEL = None` and `FAMILY = None` for Strata's default, or set a model
+   size and optional family from its catalog in the first cell.
 4. Run the eight sections in order. The default run benchmarks the localhost
    API and stops. Reports go to `/kaggle/working/strata-results`.
 
@@ -44,33 +45,52 @@ change Kaggle's UI setting. Set `CACHE_DIR` for another persistent volume.
 
 ## Models and storage
 
-Only the selected model is downloaded. Both GGUF shards are required. Downloads
-resume from `.part` files; every shard is verified against its pinned byte size
-and SHA-256 hash before inference.
+Omitting the model lets the installed Strata release choose its default for the
+notebook's hardware. To choose explicitly, use any model size in that release's
+catalog and, when needed, its family. Names are case insensitive. For example:
 
-| `MODEL` | Model | Total bytes |
-| --- | --- | ---: |
-| `iq2_xs` | Qwen3.8 Flash Next IQ2_XS (default) | 68,026,093,024 |
-| `coder` | Qwen3.8 Flash Next Coder IQ1_M | 58,408,584,928 |
-| `q2` | Qwen3.8 Flash Next Q2_0 | 66,423,878,624 |
+```python
+MODEL = None                    # Strata's default
+FAMILY = None
+```
 
-These models exceed the 20 GB working disk observed in the original Kaggle run.
-Weights therefore download to `/kaggle/temp/strata-models`, which is ephemeral.
-For durable weights, attach a Kaggle dataset containing the selected pair.
-Matching files under `/kaggle/input` are reused automatically; `MODEL_DIR` can
-select their directory explicitly. On a larger persistent volume, set
-`MODEL_DOWNLOAD_DIR` to that volume.
+```python
+MODEL = "IQ3_S"
+FAMILY = "swift"
+```
 
-`STAGE_CACHED_MODEL = True` copies attached shards to scratch before verification
+The catalog comes from official Strata, including its Qwen, Swift, Coder,
+Unsloth, Gyro, NVFP4 and Qwen3.6 families. See
+[Strata's models documentation](https://github.com/Niko1221/Strata/blob/main/docs/MODELS.md)
+for its current sizes. The old `coder` and `q2` model aliases still work.
+An explicit model remains subject to the hardware and disk requirements checked
+by Strata's installer.
+
+Only the selected model's files are downloaded. Strata supplies the filenames,
+shard count, pinned URLs, sizes and SHA-256 hashes. Downloads resume from `.part`
+files, and every selected file is verified before preparation or inference.
+This also covers single-file models, models with more than two shards, and
+ready-made packs. The chosen family, size and files are recorded in `startup.json`.
+
+Weights download to `/kaggle/temp/strata-models`, which is ephemeral. For durable
+weights, attach a Kaggle dataset containing the selected model's files, preserving
+its folder layout. Matching files under `/kaggle/input` are reused automatically;
+`MODEL_DIR` can select their directory explicitly. On a larger persistent volume,
+set `MODEL_DOWNLOAD_DIR` to that volume.
+
+`STAGE_CACHED_MODEL = True` copies attached files to scratch before verification
 and loading. Copies resume, and hashes must pass before the files are used.
 This needs space for the selected model plus 4 GiB. The attached dataset remains
 the durable copy.
 
-The starting configuration uses upstream options for two GPU stages split at
-layer 24, resident CPU experts, 8K context, q4_0 KV and a 1,024-token prefill
-chunk. Native packs avoid duplicating routed experts. MTP is omitted. See
-[Strata's multi-GPU documentation](https://github.com/Niko1221/Strata/blob/main/docs/MULTI_GPU.md)
-for its supported options.
+Strata's own `setup.py` prepares the model and generates its engine configuration.
+sok supplies the locally compiled engine through Strata's component interface.
+The installer selects the pack format, GPU layout and memory options for that
+family; sok keeps the server on localhost. Context starts at 8K, and images are
+disabled. Packs and any expert conversions use `MODEL_DOWNLOAD_DIR`, so allow
+space for those files in addition to the download. Strata may create a separate
+expert file for its low-RAM mode. See its
+[multi-GPU documentation](https://github.com/Niko1221/Strata/blob/main/docs/MULTI_GPU.md).
 
 ## Local clients
 
@@ -89,7 +109,10 @@ with mode 0600. Then run `sok-pi` in your project, or:
 
 ```bash
 sok-opencode -- /path/to/project
-sok-pi --model coder
+sok-pi                                  # Strata's default model
+sok-pi --family coder --model IQ1_M
+sok-pi --family swift --model IQ3_S
+sok-opencode --family qwen36 --model UD-Q4_K_XL -- /path/to/project
 python connect.py -- python agent_smoke.py
 ```
 
@@ -98,6 +121,7 @@ Change the owner in [kernel-metadata.json](kernel-metadata.json), or pass
 active run, waits for loaded inference and HTTPS, discovers `/v1/models`, and
 registers **sok (Strata on Kaggle)** in the clients. `Kaggle: RUNNING` means the
 notebook has started; the model can still be loading.
+Model and family choices apply to new runs; attaching reuses the model already loaded.
 
 The launcher temporarily merges the `sok` provider into the clients' JSON
 settings, preserving other providers. OpenCode starts with `--standalone` so it
@@ -122,13 +146,18 @@ to your user. A failed cancellation retains the session record for retry.
 Download and upload the model once using a CPU-only Kaggle worker:
 
 ```bash
-python prepare_cache.py --dataset your-name/sok-iq2-xs-weights
+python prepare_cache.py --dataset your-name/sok-default-weights
+python prepare_cache.py --family swift --model IQ3_S --dataset your-name/sok-swift-iq3-s
 ```
 
-This verifies the shards and creates a private dataset without GPU allocation.
+This verifies every selected file and creates a private dataset without GPU allocation.
+With no model specified, the worker uses Strata's default for a 30 GiB RAM /
+15 GiB T4 target, rather than the CPU worker's hardware. Explicit model and family
+selection works the same way as in the launcher.
 It uses Kaggle's injected notebook upload credentials. Dataset storage and CPU
 notebook limits apply. The launcher remembers the dataset in
-`~/.cache/sok/defaults.json` and attaches it on subsequent starts. To select a
+`~/.cache/sok/defaults.json`, separately for each model/family selection, and
+attaches it on subsequent starts. To select a
 dataset explicitly, pass `--model-dataset owner/dataset` to `connect.py`.
 `--stage-model` stages attached weights to scratch; `--no-stage-model` reads
 in place. Compiled engines are kept in the notebook's persistent cache and
@@ -160,7 +189,8 @@ for your intended use. GPU quota includes setup and idle time; only ending the
 session releases the GPU allocation. The notebook has no automatic restarts.
 
 For manual client setup, use [pi-config-example.json](pi-config-example.json)
-or [opencode-config-example.json](opencode-config-example.json). Managed runs
+or [opencode-config-example.json](opencode-config-example.json), replacing the
+example model ID with the value returned by `/v1/models`. Managed runs
 save shell variables for the current endpoint:
 
 ```bash
@@ -172,7 +202,7 @@ python agent_smoke.py --base-url "$STRATA_BASE_URL"
 ## Development and validation
 
 sok's runtime and benchmark use Python's standard library. Regenerate the
-self-contained notebook after changing the runtime or benchmark:
+self-contained notebook after changing the runtime, `strata_models.py` or benchmark:
 
 ```bash
 python tools/build_kaggle_notebook.py
@@ -181,10 +211,11 @@ python -m unittest discover -s tools -p 'test_*.py'
 ```
 
 Offline tests cover release updates, skipped builds, failed-build recovery,
-resumable downloads, hashes, notebook generation, streaming, client registration
+model defaults and families, resumable downloads, hashes, notebook generation,
+streaming, client registration
 and session cleanup. With the optional local requirements installed, they also
 cover the Kaggle SDK. Set `STRATA_SOURCE` to an official checkout to run the
-optional upstream HTTP adapter check with its dependencies installed.
+upstream catalog check and optional HTTP adapter check with its dependencies installed.
 
 [Earlier Kaggle measurements](docs/KAGGLE.md) describe the engine revisions
 actually tested. They do not validate the latest automatically selected release.

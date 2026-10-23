@@ -24,7 +24,15 @@ def request(base, path, key, body=None, timeout=900):
         raise
 
 
-def chat(base, key, messages, model="strata-iq2_xs", max_tokens=128, tools=None, tool_choice=None):
+def discover_model(base, key):
+    with request(base, "/models", key) as response:
+        models = json.load(response)["data"]
+    if len(models) != 1 or not models[0].get("id"):
+        raise RuntimeError("Expected one running model in /v1/models; specify --model explicitly")
+    return models[0]["id"]
+
+
+def chat(base, key, messages, model="strata", max_tokens=128, tools=None, tool_choice=None):
     body = {"model": model, "messages": messages, "max_tokens": max_tokens,
             "temperature": 0, "reasoning_effort": "none", "stream": True,
             "stream_options": {"include_usage": True}}
@@ -124,12 +132,16 @@ def tool_test(base, key, model):
     return {"ok": True, "call": first, "followup": second}
 
 
-def benchmark(base, key, model="strata-iq2_xs", words=(128, 512, 2048), repeats=1, server_pid=None,
+def benchmark(base, key, model=None, words=(128, 512, 2048), repeats=1, server_pid=None,
               output=None):
     if not key:
         raise ValueError("Set STRATA_API_KEY in the environment")
     with request(base, "/models", key) as response:
         models = json.load(response)
+    if model is None:
+        if len(models["data"]) != 1:
+            raise RuntimeError("Specify --model when the endpoint lists several models")
+        model = models["data"][0]["id"]
     if model not in [m["id"] for m in models["data"]]:
         raise RuntimeError(f"Model {model} is absent from /v1/models")
     samples, finished = [], threading.Event()
@@ -180,7 +192,7 @@ def benchmark(base, key, model="strata-iq2_xs", words=(128, 512, 2048), repeats=
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--base-url", default=os.environ.get("STRATA_BASE_URL", "http://127.0.0.1:8080/v1"))
-    parser.add_argument("--model", default=os.environ.get("STRATA_MODEL", "strata-iq2_xs"))
+    parser.add_argument("--model", default=os.environ.get("STRATA_MODEL"), help="default: discover the running model")
     parser.add_argument("--words", type=int, nargs="+", default=[128, 512, 2048])
     parser.add_argument("--repeats", type=int, default=1)
     parser.add_argument("--server-pid", type=int)

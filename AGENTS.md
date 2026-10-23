@@ -4,13 +4,16 @@ sok means Strata on Kaggle. It installs and builds official Strata releases;
 this repository contains no Strata engine or server source and applies no patches.
 
 - `kaggle_runtime.py` implements the notebook. `tools/build_kaggle_notebook.py`
-  generates `sok.ipynb`; regenerate it after runtime or benchmark changes.
+  generates `sok.ipynb`; regenerate it after runtime, `strata_models.py` or benchmark changes.
 - `install()` checks the latest stable upstream release each run. The checkout,
   virtual environment and successful build persist in `/kaggle/working/sok`.
   Skip installation and build only when the recorded version and build match
   and the environment and executable exist. Never record a failed build as current.
 - Use upstream requirements and CMake. Do not vendor the engine, patch it, or
   substitute a fixed engine dataset for the latest release.
+- `strata_models.py` reads the installed release's catalog and calls its unmodified
+  `setup.py` to prepare models. Omitted model/family means Strata's default; never
+  maintain a second model allowlist. Preserve the upstream family-specific engine options.
 - `connect.py` manages local clients and Kaggle sessions. `prepare_cache.py`
   prepares durable model datasets on a CPU worker. Models remain hash-pinned.
 - Keep API keys out of notebook source, logs and command arguments. Keep Strata

@@ -10,15 +10,18 @@ import time
 import kaggle_runtime as runtime
 
 
-def run_cache(dataset, model, launch_id):
-    runtime.MODEL, runtime.LAUNCH_ID = model, launch_id
+def run_cache(dataset, model, launch_id, family=None):
+    runtime.MODEL, runtime.FAMILY, runtime.LAUNCH_ID = model, family, launch_id
     runtime.REPORT['model'] = model
     runtime.announce_session()
     folder = Path('/kaggle/temp/sok-model-cache')
     folder.mkdir(parents=True, exist_ok=True)
-    variant = runtime.MODELS[model]
-    files = [folder / f"Qwen3.8-Flash-Next-GSQ-RCO-{variant['quant']}-{i:05}-of-00002.gguf" for i in (1, 2)]
-    total = sum(size for size, _ in variant['shards'])
+    runtime.CACHE_DIR = Path('/kaggle/temp/sok-cache-setup')
+    runtime.checkout_strata()
+    # Choose for the notebook's T4 target, rather than the CPU worker's hardware.
+    variant = runtime.select_model(ram_gb=30, vram_gb=15)
+    files = [folder / item['path'] for item in variant['files']]
+    total = sum(item['bytes'] for item in variant['files'])
     if shutil.disk_usage(folder).free < total + 4 * 2**30:
         raise RuntimeError('Not enough scratch disk for the selected model cache')
     if not os.environ.get('KAGGLE_API_V1_TOKEN') and not os.environ.get('KAGGLE_API_TOKEN'):
@@ -28,15 +31,15 @@ def run_cache(dataset, model, launch_id):
     env = dict(os.environ, PYTHONUNBUFFERED='1', TQDM_MININTERVAL='30')
     subprocess.run(cli + ['datasets', 'list', '--mine'], env=env, stdout=subprocess.DEVNULL, check=True)
     print('Cache phase: downloading and verifying', flush=True)
-    for path, (size, digest) in zip(files, variant['shards']):
-        url = f"https://huggingface.co/{variant['repo']}/resolve/{variant['revision']}/{variant['quant']}/{path.name}"
-        runtime.fetch_model_file(url, path, size, digest)
+    for path, item in zip(files, variant['files']):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        runtime.fetch_model_file(item['url'], path, item['bytes'], item['sha256'])
     metadata = {'id': dataset, 'title': dataset.split('/')[1].replace('-', ' ').title(),
-        'licenses': [{'name': 'apache-2.0'}],
-        'description': f"Unmodified {variant['quant']} shards from https://huggingface.co/{variant['repo']}/tree/{variant['revision']}. Verified against pinned SHA-256 hashes."}
+        'licenses': [{'name': 'other'}],
+        'description': f"Unmodified {variant['family']} / {variant['model']} files from Strata's pinned catalog, verified against SHA-256 hashes. Original model license: {variant['license']}. Sources: " + ', '.join(item['url'] for item in variant['files'])}
     (folder / 'dataset-metadata.json').write_text(json.dumps(metadata, indent=2) + '\n')
     print('Cache phase: uploading', flush=True)
-    subprocess.run(cli + ['datasets', 'create', '-p', str(folder), '--keep-tabular'], env=env, check=True)
+    subprocess.run(cli + ['datasets', 'create', '-p', str(folder), '--keep-tabular', '--dir-mode', 'zip'], env=env, check=True)
     print('Cache submitted:', dataset, flush=True)
     for _ in range(240):
         try:

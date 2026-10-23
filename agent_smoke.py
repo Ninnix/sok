@@ -9,7 +9,7 @@ import sys
 import tempfile
 import time
 
-from benchmark import chat
+from benchmark import chat, discover_model
 
 TOOLS = [
     {"type": "function", "function": {
@@ -73,7 +73,7 @@ def smoke(base, key, model, rounds=12):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--base-url", default=os.environ.get("STRATA_BASE_URL", "http://127.0.0.1:8080/v1"))
-    parser.add_argument("--model", default=os.environ.get("STRATA_MODEL", "strata-iq2_xs"))
+    parser.add_argument("--model", default=os.environ.get("STRATA_MODEL"), help="default: discover the running model")
     parser.add_argument("--rounds", type=int, default=12, help="maximum turns per task before giving up")
     parser.add_argument("--repeats", type=int, default=1, help="repeat the complete local coding task")
     parser.add_argument("--output", type=Path)
@@ -83,6 +83,8 @@ if __name__ == "__main__":
     key = os.environ.get("STRATA_API_KEY", "")
     if not key:
         parser.error("Set STRATA_API_KEY in the environment")
+    if args.model is None:
+        args.model = discover_model(args.base_url, key)
     runs = []
     for _ in range(args.repeats):
         begin = time.monotonic()

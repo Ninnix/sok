@@ -19,7 +19,8 @@ import time
 import urllib.error
 import urllib.request
 
-MODEL = "iq2_xs"                # "iq2_xs", "coder" or "q2"; only this model is downloaded
+MODEL = None                    # None: Strata's default; otherwise any size in its catalog
+FAMILY = None                   # optional Strata family, e.g. "swift", "coder", "unsloth", "qwen36"
 PERSISTENT_DISK = True           # also select Session options > Persistence > Files only in Kaggle
 CACHE_DIR = Path("/kaggle/working/sok" if PERSISTENT_DISK else "/kaggle/temp/sok")
 MODEL_DIR = None                 # optional attached dataset directory; matching attached datasets are also found automatically
@@ -29,10 +30,8 @@ OUTPUT_DIR = Path("/kaggle/working/strata-results")
 STRATA_REPO = "https://github.com/Niko1221/Strata.git"
 STRATA_RELEASE_API = "https://api.github.com/repos/Niko1221/Strata/releases/latest"
 CONTEXT = 8192
-PREFILL = 1024
 PORT = 8080
 KV = "q4_0"
-EXPERT_MODE = "resident"          # "resident" keeps the non-GPU experts in RAM; "mmap" uses the file cache
 CUDA_COMPILER = "/usr/local/cuda/bin/nvcc"
 BUILD_JOBS = 2
 TUNNEL = "none"                  # "localhost.run" gives an account-free HTTPS endpoint
@@ -49,29 +48,8 @@ BENCHMARK_REPEATS = 1
 STARTED = time.monotonic()
 PROCESSES = {}
 REPORT = {"model": MODEL, "context": CONTEXT, "phases_s": {}}
-MODELS = {
-    "coder": {
-        "repo": "ISTA-DASLab/Qwen3.8-Flash-Next-GSQ-RCO-Coder-GGUF",
-        "revision": "5348543e0147355ac9cbcb031184a3546350988e",
-        "quant": "IQ1_M", "profile": "expert-profile-coder.bin",
-        "shards": [(29608446496, "e11083ba855e7666b48ea3f2db6a9c3a20c18751a012cc24f948de91b7087fad"),
-                   (28800138432, "316b46f3a2dbd68c900f43136ab9449f9dcc3725dfd8c794847c204bc161e113")],
-    },
-    "q2": {
-        "repo": "ISTA-DASLab/Qwen3.8-Flash-Next-GSQ-RCO-GGUF",
-        "revision": "ed59f92082b1e93c0e96d60a8b11aab089b52f09",
-        "quant": "Q2_0", "profile": "expert-profile.bin",
-        "shards": [(37623740192, "69820c02ec7d0b45ef2ebb19d6620299db749fe2aded7f39f93c6b88b199b720"),
-                   (28800138432, "316b46f3a2dbd68c900f43136ab9449f9dcc3725dfd8c794847c204bc161e113")],
-    },
-    "iq2_xs": {
-        "repo": "ISTA-DASLab/Qwen3.8-Flash-Next-GSQ-RCO-GGUF",
-        "revision": "ed59f92082b1e93c0e96d60a8b11aab089b52f09",
-        "quant": "IQ2_XS", "profile": "expert-profile.bin",
-        "shards": [(39225954592, "92cee27ae5bbadcd732416a0f7a7f0acc092399dbbe8f5a5efa707c2ec0a49d7"),
-                   (28800138432, "316b46f3a2dbd68c900f43136ab9449f9dcc3725dfd8c794847c204bc161e113")],
-    },
-}
+SELECTED_MODEL = None
+STRATA_MODELS_SOURCE = ""         # embedded by the notebook generator
 
 
 def secret(name):
@@ -93,17 +71,52 @@ def run(args, **kwargs):
     subprocess.run([str(x) for x in args], check=True, **kwargs)
 
 
-def model_paths(source=False):
-    model = MODELS[MODEL]
-    names = [f"Qwen3.8-Flash-Next-GSQ-RCO-{model['quant']}-{i:05}-of-00002.gguf" for i in (1, 2)]
+def strata_request(action, **payload):
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    source = STRATA_MODELS_SOURCE or Path(__file__).with_name("strata_models.py").read_text()
+    helper = CACHE_DIR / "strata_models.py"
+    helper.write_text(source)
+    request, reply = CACHE_DIR / "model-request.json", CACHE_DIR / "model-reply.json"
+    request.write_text(json.dumps(dict(action=action, **payload)) + "\n")
+    reply.unlink(missing_ok=True)
+    python = CACHE_DIR / "venv/bin/python"
+    run([python if python.exists() else sys.executable, helper, CACHE_DIR / "strata", request, reply])
+    return json.loads(reply.read_text())
+
+
+def select_model(**hardware):
+    global SELECTED_MODEL
+    if not hardware:
+        hardware = dict(ram_gb=REPORT.get("ram_bytes", 0) / 2**30 or None,
+                        vram_gb=max((float(g[2]) / 1024 for g in REPORT.get("gpus", [])), default=15))
+    SELECTED_MODEL = strata_request("select", model=MODEL, family=FAMILY, **hardware)
+    REPORT["model"] = SELECTED_MODEL["id"]
+    REPORT["model_selection"] = SELECTED_MODEL
+    print(f"Selected Strata model: {SELECTED_MODEL['family']} / {SELECTED_MODEL['model']}", flush=True)
+    return SELECTED_MODEL
+
+
+def model_folder(source=False):
+    if SELECTED_MODEL is None:
+        raise RuntimeError("Select the model after installing Strata first")
     if STAGE_CACHED_MODEL and not source:
-        folder = MODEL_DOWNLOAD_DIR / MODEL
-    elif MODEL_DIR:
-        folder = Path(MODEL_DIR)
-    else:
-        attached = [p.parent for p in Path("/kaggle/input").rglob(names[0]) if (p.parent / names[1]).is_file()]
-        folder = sorted(attached)[0] if attached else MODEL_DOWNLOAD_DIR / MODEL
-    return [folder / name for name in names]
+        return MODEL_DOWNLOAD_DIR / SELECTED_MODEL["id"]
+    if MODEL_DIR:
+        return Path(MODEL_DIR)
+    names = [Path(item["path"]) for item in SELECTED_MODEL["files"]]
+    attached = set()
+    for candidate in Path("/kaggle/input").rglob(names[0].name):
+        folder = candidate.parent
+        for _ in names[0].parts[1:]:
+            folder = folder.parent
+        if all((folder / name).is_file() for name in names):
+            attached.add(folder)
+    return sorted(attached)[0] if attached else MODEL_DOWNLOAD_DIR / SELECTED_MODEL["id"]
+
+
+def model_paths(source=False):
+    folder = model_folder(source)
+    return [folder / item["path"] for item in SELECTED_MODEL["files"]]
 
 
 def save_report():
@@ -147,12 +160,10 @@ def announce_session():
 
 def hardware():
     announce_session()
-    if MODEL not in MODELS:
-        raise ValueError(f"MODEL must be one of {', '.join(MODELS)}")
-    if CONTEXT < 1024 or PREFILL < 128 or not 1 <= PORT <= 65535:
-        raise ValueError("Invalid context, prefill size, or port")
-    if EXPERT_MODE not in ("resident", "mmap") or KV not in ("int8", "q4_0", "k8v4"):
-        raise ValueError("Invalid expert mode or KV format")
+    if CONTEXT < 1024 or not 1 <= PORT <= 65535:
+        raise ValueError("Invalid context or port")
+    if KV not in ("int8", "q4_0", "k8v4"):
+        raise ValueError("Invalid KV format")
     if not 0 <= SERVE_SECONDS <= 10800:
         raise ValueError("SERVE_SECONDS must be between 0 and 10800; Kaggle's own limit still applies")
     if not 0 <= IDLE_SECONDS <= 10800:
@@ -174,31 +185,14 @@ def hardware():
     mem = dict(line.split(":", 1) for line in Path("/proc/meminfo").read_text().splitlines())
     ram = int(mem["MemTotal"].split()[0]) * 1024
     free = shutil.disk_usage(CACHE_DIR).free
-    missing = sum(max(0, size - (p.stat().st_size if p.exists() else
-                                p.with_suffix('.gguf.part').stat().st_size
-                                if p.with_suffix('.gguf.part').exists() else 0))
-                  for p, (size, _) in zip(model_paths(), MODELS[MODEL]["shards"]))
-    if MODEL_DIR and any(not p.is_file() or p.stat().st_size != size
-                        for p, (size, _) in zip(model_paths(source=True), MODELS[MODEL]['shards'])):
-        raise RuntimeError("MODEL_DIR must contain both complete shards of the selected model")
-    model_folder = model_paths()[0].parent
-    probe = model_folder
-    while not probe.exists():
-        probe = probe.parent
-    model_free = shutil.disk_usage(probe).free
-    same_disk = probe.stat().st_dev == CACHE_DIR.stat().st_dev
-    if free < 4 * 2**30 or model_free < missing + (4 * 2**30 if same_disk else 0):
-        raise RuntimeError(f"Need {missing / 2**30 + 4:.1f} GiB free for model, build and pack; "
-                           f"cache has {free / 2**30:.1f} GiB, model disk has {model_free / 2**30:.1f} GiB. "
-                           "Attach a model dataset via MODEL_DIR.")
+    if free < 4 * 2**30:
+        raise RuntimeError("Need at least 4 GiB free for the Strata checkout and build")
     REPORT.update(gpus=gpus, ram_bytes=ram, cpu_count=os.cpu_count(), disk_free_bytes=free,
-                  persistent_disk=PERSISTENT_DISK, cache_dir=str(CACHE_DIR),
-                  model_dir=str(model_folder), model_from_attached_dataset=str(model_folder).startswith('/kaggle/input/'))
+                  persistent_disk=PERSISTENT_DISK, cache_dir=str(CACHE_DIR))
     print(raw.strip())
     print(f"RAM: {ram / 2**30:.1f} GiB; CPUs: {os.cpu_count()}; free disk: {free / 2**30:.1f} GiB")
     print("Disk persistence: Files only must be selected in Kaggle Session options." if PERSISTENT_DISK
           else "Disk persistence is disabled.")
-    print(f"Model directory: {model_folder}. Attach a Kaggle dataset to retain model weights across sessions.")
     save_report()
 
 # %% Dependency installation
@@ -213,8 +207,7 @@ def latest_strata_release():
     return tag
 
 
-def install():
-    begin = time.monotonic()
+def checkout_strata():
     release = latest_strata_release()
     print(f"Latest Strata release: {release}", flush=True)
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
@@ -223,11 +216,17 @@ def install():
         run(["git", "clone", "--depth=1", "--no-checkout", "--branch", release, STRATA_REPO, repo])
     run(["git", "-C", repo, "fetch", "--depth=1", "origin", f"refs/tags/{release}"])
     revision = subprocess.check_output(["git", "-C", str(repo), "rev-parse", "FETCH_HEAD^{commit}"], text=True).strip()
+    return repo, release, revision
+
+
+def install():
+    begin = time.monotonic()
+    repo, release, revision = checkout_strata()
     head = subprocess.check_output(["git", "-C", str(repo), "rev-parse", "HEAD"], text=True).strip()
     python = CACHE_DIR / "venv/bin/python"
     build = repo / "build"
     options = ["-DSTRATA_ENABLE_CUDA=ON", "-DCMAKE_BUILD_TYPE=Release",
-               "-DCMAKE_CUDA_ARCHITECTURES=75", "-DSTRATA_BUILD_TESTS=OFF", "-DSTRATA_MMQ_KQUANTS=OFF"]
+               "-DCMAKE_CUDA_ARCHITECTURES=75", "-DSTRATA_BUILD_TESTS=OFF", "-DSTRATA_MMQ_KQUANTS=ON"]
     expected = dict(release=release, revision=revision, python=list(sys.version_info[:2]), options=options)
     stamp = CACHE_DIR / "strata-build.json"
     try:
@@ -340,26 +339,31 @@ def fetch_model_file(url, path, size, sha256):
 
 def download():
     begin = time.monotonic()
-    model = MODELS[MODEL]
+    model = select_model()
     paths = model_paths()
-    folder = paths[0].parent
+    folder = model_folder()
     folder.mkdir(parents=True, exist_ok=True)
-    missing = sum(max(0, size - max((p.stat().st_size if p.exists() else 0),
-                                  (p.with_suffix('.gguf.part').stat().st_size
-                                   if p.with_suffix('.gguf.part').exists() else 0)))
-                  for p, (size, _) in zip(paths, model["shards"]))
-    if missing and shutil.disk_usage(folder).free < missing + 4 * 2**30:
-        raise RuntimeError(f"Need {missing / 2**30 + 4:.1f} GiB free for the selected model and pack. "
-                           "Use an attached model dataset or a larger disk; /kaggle/temp is ephemeral.")
     sources = model_paths(source=True)
-    for source, path, (size, digest) in zip(sources, paths, model["shards"]):
+    missing = sum(max(0, item["bytes"] - (path.stat().st_size if path.exists() else
+                  path.with_suffix(path.suffix + ".part").stat().st_size
+                  if path.with_suffix(path.suffix + ".part").exists() else 0))
+                  for path, item in zip(paths, model["files"]))
+    if missing and shutil.disk_usage(folder).free < missing + 4 * 2**30:
+        raise RuntimeError(f"Need {missing / 2**30 + 4:.1f} GiB free for the selected model. "
+                           "Use an attached model dataset or a larger disk.")
+    if MODEL_DIR and any(not path.is_file() or path.stat().st_size != item["bytes"]
+                         for path, item in zip(sources, model["files"])):
+        raise RuntimeError("MODEL_DIR must contain every complete file of the selected model")
+    for source, path, item in zip(sources, paths, model["files"]):
+        path.parent.mkdir(parents=True, exist_ok=True)
         if STAGE_CACHED_MODEL and source != path and source.is_file() and not path.exists():
-            stage_model_file(source, path, size)
-        url = f"https://huggingface.co/{model['repo']}/resolve/{model['revision']}/{model['quant']}/{path.name}"
-        fetch_model_file(url, path, size, digest)
+            stage_model_file(source, path, item["bytes"])
+        fetch_model_file(item["url"], path, item["bytes"], item["sha256"])
     if STAGE_CACHED_MODEL:
-        REPORT['model_staged_from'] = [str(source) for source, path in zip(sources, paths) if source != path]
-    REPORT["model_files"] = [dict(path=str(p), bytes=s, sha256=h) for p, (s, h) in zip(paths, model["shards"])]
+        REPORT["model_staged_from"] = [str(source) for source, path in zip(sources, paths) if source != path]
+    REPORT["model_files"] = [dict(path=str(path), bytes=item["bytes"], sha256=item["sha256"])
+                             for path, item in zip(paths, model["files"])]
+    REPORT["model_dir"] = str(folder)
     REPORT["phases_s"]["model_download_and_verify"] = time.monotonic() - begin
     save_report()
     return paths
@@ -367,32 +371,44 @@ def download():
 # %% Strata configuration
 def configure():
     begin = time.monotonic()
+    if SELECTED_MODEL is None:
+        raise RuntimeError("Download and verify the selected model first")
+    verified = MODEL_DOWNLOAD_DIR / "verified" / SELECTED_MODEL["id"]
+    for source, item in zip(model_paths(), SELECTED_MODEL["files"]):
+        if not source.is_file():
+            raise RuntimeError("Download and verify every model file first")
+        target = verified / item["path"]
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if target.is_symlink():
+            target.unlink()
+        target.symlink_to(source.resolve())
+        # Strata can reuse our verified files without writing markers into a read-only dataset.
+        target.with_name(target.name + ".done").write_text("sha256 " + item["sha256"])
     repo = CACHE_DIR / "strata"
-    python = CACHE_DIR / "venv/bin/python"
-    model = MODELS[MODEL]
-    shards = model_paths()
-    if not all(p.is_file() for p in shards):
-        raise RuntimeError("Download and verify both shards first")
-    pack = CACHE_DIR / "packs" / MODEL
-    run([python, repo / "tools/iq_pack.py", "--gguf", shards[0], "--out", pack])
-    cfg = {
-        "exe": str(repo / "build/strata"), "cwd": str(repo), "backend": "cuda",
-        "gpu": [0, 1], "gpu_order": "as_given", "layer_split": "24",
-        "tokenizer": str(pack / "tokenizer"), "model_name": "strata-" + MODEL,
-        "host": "127.0.0.1", "port": PORT, "open_browser": False,
-        "log": str(OUTPUT_DIR / "engine.log"), "engine_silence_s": 900,
-        "args": ["--pack", str(pack), "--native", str(shards[0]), "--ple-gguf", str(shards[1]),
-                 "--expert-profile", str(repo / "data" / model["profile"]), "--expert-cache", "auto",
-                 "--resident-experts" if EXPERT_MODE == "resident" else "--mmap-experts",
-                 "--trim-stage-weights", "--max-context", str(CONTEXT), "--kv", KV,
-                 "--prefill", str(PREFILL), "--spec", "2", "--ple-io", "direct", "--pool-workers", "3"],
-    }
-    path = CACHE_DIR / "server.json"
-    path.write_text(json.dumps(cfg, indent=2) + "\n")
+    engine = repo / "build/strata"
+    for requirement in SELECTED_MODEL.get("requirements", []):
+        run([sys.executable, "-m", "pip", "--python", CACHE_DIR / "venv/bin/python",
+             "install", "-r", repo / requirement])
+    version = subprocess.check_output([str(engine), "--version"], text=True).strip().split()[-1]
+    component = CACHE_DIR / "components/engine/local"
+    component.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(engine, component / "strata")
+    manifest = dict(schema_version=2, id="strata-engine", name="strata-engine", version=version,
+        platform="linux-x86_64", backend="cuda", archs=["sm_75"], build_id=REPORT["strata_revision"],
+        entrypoint="strata", files=[dict(path="strata", bytes=engine.stat().st_size,
+        sha256=hashlib.sha256(engine.read_bytes()).hexdigest())])
+    (component / "engine-component.json").write_text(json.dumps(manifest) + "\n")
+    cfg = strata_request("prepare", selection=SELECTED_MODEL, context=CONTEXT, port=PORT, kv=KV,
+        install_dir=str(CACHE_DIR / "setup"), components_dir=str(CACHE_DIR / "components"),
+        data_dir=str(MODEL_DOWNLOAD_DIR / "strata-data"), models_dir=str(verified))
+    cfg.update(exe=str(engine), cwd=str(repo), backend="cuda", host="127.0.0.1", port=PORT,
+               open_browser=False, log=str(OUTPUT_DIR / "engine.log"), engine_silence_s=900)
+    cfg.pop("api_key", None)
+    (CACHE_DIR / "server.json").write_text(json.dumps(cfg, indent=2) + "\n")
     REPORT["configuration"] = cfg
     REPORT["phases_s"]["pack"] = time.monotonic() - begin
     save_report()
-    print(f"Configured {cfg['model_name']}: layers 0–23 on GPU 0, 24–47 on GPU 1; context {CONTEXT}")
+    print(f"Configured {cfg['model_name']}: context {CONTEXT}")
     return cfg
 
 # %% Inference server startup
